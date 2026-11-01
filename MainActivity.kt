@@ -1,5 +1,8 @@
 package com.bijoy.keyboard
 
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
+import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Intent
 import android.content.res.Configuration
@@ -9,10 +12,6 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.provider.Settings
 import android.text.InputType
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.style.ForegroundColorSpan
-import android.text.style.StyleSpan
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -103,7 +102,7 @@ class MainActivity : Activity() {
         col.addView(mapCard(), lp(MATCH_PARENT, WRAP_CONTENT, side, dp(16), side, 0))
         col.addView(testCard(), lp(MATCH_PARENT, WRAP_CONTENT, side, dp(16), side, 0))
         col.addView(tipCard(), lp(MATCH_PARENT, WRAP_CONTENT, side, dp(16), side, 0))
-        col.addView(footer(), lp(MATCH_PARENT, WRAP_CONTENT, side, dp(26), side, dp(32)))
+        col.addView(footer(), lp(MATCH_PARENT, WRAP_CONTENT, side, dp(20), side, dp(28)))
 
         val scroll = ScrollView(this).apply {
             setBackgroundColor(p.bg)
@@ -123,39 +122,75 @@ class MainActivity : Activity() {
         }
     }
 
-    // ---------- ক্রেডিট ফুটার ----------
+    // ---------- ক্রেডিট কার্ড ----------
+    private var heartAnim: ObjectAnimator? = null
+
     private fun footer(): View {
-        val box = LinearLayout(this).apply {
+        val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
-        }
-        // ছোট গ্রেডিয়েন্ট দাগ
-        val bar = View(this).apply {
+            setPadding(dp(20), dp(26), dp(20), dp(24))
             background = GradientDrawable(
-                GradientDrawable.Orientation.LEFT_RIGHT, intArrayOf(p.heroA, p.heroB)
-            ).apply { cornerRadius = dpf(3f) }
+                GradientDrawable.Orientation.TL_BR, intArrayOf(p.heroA, p.heroB)
+            ).apply { cornerRadius = dpf(28f) }
+            elevation = if (p.dark) 0f else dpf(8f)
         }
-        box.addView(bar, lp(dp(44), dp(4)))
 
-        val prefix = "Powered by "
-        val name = "Adnan Sami"
-        val powered = SpannableString(prefix + name).apply {
-            setSpan(ForegroundColorSpan(p.primary), prefix.length, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            setSpan(StyleSpan(Typeface.BOLD), prefix.length, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        // গোল ব্যাজ, নামের প্রথম অক্ষর
+        val avatar = label("A", 26f, Color.WHITE, true).apply {
+            gravity = Gravity.CENTER
+            background = rounded(white(40), dpf(30f), white(120), dp(2))
         }
-        box.addView(
-            label("", 15f, p.sub).apply { text = powered; gravity = Gravity.CENTER },
+        card.addView(avatar, lp(dp(60), dp(60)))
+
+        card.addView(
+            label("POWERED BY", 11f, white(190), true).apply {
+                gravity = Gravity.CENTER
+                letterSpacing = 0.25f
+            },
             lp(MATCH_PARENT, WRAP_CONTENT, 0, dp(14))
         )
-        box.addView(
-            label("© 2026", 12.5f, p.sub).apply { gravity = Gravity.CENTER },
-            lp(MATCH_PARENT, WRAP_CONTENT, 0, dp(4))
+        card.addView(
+            label("Adnan Sami", 24f, Color.WHITE, true).apply { gravity = Gravity.CENTER },
+            lp(MATCH_PARENT, WRAP_CONTENT, 0, dp(2))
         )
-        box.addView(
-            label("Love Forever ❤️", 13f, p.sub, true).apply { gravity = Gravity.CENTER },
-            lp(MATCH_PARENT, WRAP_CONTENT, 0, dp(6))
+
+        // সরু দাগ
+        val line = View(this).apply { setBackgroundColor(white(60)) }
+        card.addView(line, lp(dp(120), dp(1), 0, dp(16), 0, dp(14)))
+
+        // Love Forever + স্পন্দিত হৃদয়
+        val pill = LinearLayout(this).apply {
+            gravity = Gravity.CENTER_VERTICAL
+            setPadding(dp(16), dp(8), dp(16), dp(8))
+            background = rounded(white(38), dpf(24f), white(80), dp(1))
+        }
+        pill.addView(label("Love Forever", 14f, Color.WHITE, true))
+        val heart = label("\u2764\uFE0F", 16f, Color.WHITE)
+        pill.addView(heart, lp(WRAP_CONTENT, WRAP_CONTENT, dp(8)))
+        card.addView(pill, lp(WRAP_CONTENT, WRAP_CONTENT))
+
+        heartAnim = ObjectAnimator.ofPropertyValuesHolder(
+            heart,
+            PropertyValuesHolder.ofFloat(View.SCALE_X, 1f, 1.3f),
+            PropertyValuesHolder.ofFloat(View.SCALE_Y, 1f, 1.3f)
+        ).apply {
+            duration = 650
+            repeatCount = ValueAnimator.INFINITE
+            repeatMode = ValueAnimator.REVERSE
+            start()
+        }
+
+        card.addView(
+            label("\u00A9 2026  \u2022  সর্বস্বত্ব সংরক্ষিত", 12f, white(200)).apply { gravity = Gravity.CENTER },
+            lp(MATCH_PARENT, WRAP_CONTENT, 0, dp(16))
         )
-        return box
+        return card
+    }
+
+    override fun onDestroy() {
+        heartAnim?.cancel()
+        super.onDestroy()
     }
 
     private fun hero(): View {
