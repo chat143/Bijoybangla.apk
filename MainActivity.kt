@@ -9,6 +9,10 @@ import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
 import android.provider.Settings
 import android.text.InputType
+import android.text.SpannableString
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
@@ -99,10 +103,7 @@ class MainActivity : Activity() {
         col.addView(mapCard(), lp(MATCH_PARENT, WRAP_CONTENT, side, dp(16), side, 0))
         col.addView(testCard(), lp(MATCH_PARENT, WRAP_CONTENT, side, dp(16), side, 0))
         col.addView(tipCard(), lp(MATCH_PARENT, WRAP_CONTENT, side, dp(16), side, 0))
-        col.addView(
-            label("বিজয় ফিজিক্যাল কিবোর্ড  •  সংস্করণ ১.০", 12f, p.sub).apply { gravity = Gravity.CENTER },
-            lp(MATCH_PARENT, WRAP_CONTENT, side, dp(22), side, dp(28))
-        )
+        col.addView(footer(), lp(MATCH_PARENT, WRAP_CONTENT, side, dp(26), side, dp(32)))
 
         val scroll = ScrollView(this).apply {
             setBackgroundColor(p.bg)
@@ -120,6 +121,41 @@ class MainActivity : Activity() {
                 .setStartDelay(70L * i).setDuration(450)
                 .setInterpolator(DecelerateInterpolator()).start()
         }
+    }
+
+    // ---------- ক্রেডিট ফুটার ----------
+    private fun footer(): View {
+        val box = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            gravity = Gravity.CENTER_HORIZONTAL
+        }
+        // ছোট গ্রেডিয়েন্ট দাগ
+        val bar = View(this).apply {
+            background = GradientDrawable(
+                GradientDrawable.Orientation.LEFT_RIGHT, intArrayOf(p.heroA, p.heroB)
+            ).apply { cornerRadius = dpf(3f) }
+        }
+        box.addView(bar, lp(dp(44), dp(4)))
+
+        val prefix = "Powered by "
+        val name = "Adnan Sami"
+        val powered = SpannableString(prefix + name).apply {
+            setSpan(ForegroundColorSpan(p.primary), prefix.length, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            setSpan(StyleSpan(Typeface.BOLD), prefix.length, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        box.addView(
+            label("", 15f, p.sub).apply { text = powered; gravity = Gravity.CENTER },
+            lp(MATCH_PARENT, WRAP_CONTENT, 0, dp(14))
+        )
+        box.addView(
+            label("© 2026", 12.5f, p.sub).apply { gravity = Gravity.CENTER },
+            lp(MATCH_PARENT, WRAP_CONTENT, 0, dp(4))
+        )
+        box.addView(
+            label("Love Forever ❤️", 13f, p.sub, true).apply { gravity = Gravity.CENTER },
+            lp(MATCH_PARENT, WRAP_CONTENT, 0, dp(6))
+        )
+        return box
     }
 
     private fun hero(): View {
