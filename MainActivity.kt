@@ -717,6 +717,8 @@ class MainActivity : Activity() {
     }
 
     private fun refresh() {
+        // লাইসেন্স পেজে মূল স্ক্রিনের ভিউ (toggle ইত্যাদি) তৈরি হয় না — তখন কিছু করার নেই
+        if (!::toggle.isInitialized || !::statusTitle.isInitialized || !::statusSub.isInitialized) return
         val en = enabled()
         val sel = selected()
         toggle.setOn(sel)
