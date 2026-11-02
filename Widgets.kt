@@ -15,27 +15,125 @@ import android.graphics.Typeface
 import android.view.View
 import android.view.animation.OvershootInterpolator
 
-/** হিরোর পেছনের নরম গোল আকৃতিগুলো */
-class BlobView(ctx: Context, private val r: Float) : View(ctx) {
+/** পুরো অ্যাপের পেছনের হালকা সাদা-ধূসর পটভূমি, নরম আলোর দাগ সহ (কাঁচের কার্ড এর ওপরেই ফুটে ওঠে) */
+class PageBackdrop(ctx: Context) : View(ctx) {
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+    private fun blob(c: Canvas, x: Float, y: Float, rad: Float, gray: Int, a: Int) {
+        paint.shader = RadialGradient(
+            x, y, rad,
+            Color.argb(a, gray, gray, gray),
+            Color.argb(0, gray, gray, gray),
+            Shader.TileMode.CLAMP
+        )
+        c.drawCircle(x, y, rad, paint)
+        paint.shader = null
+    }
+
+    override fun onDraw(c: Canvas) {
+        val w = width.toFloat()
+        val h = height.toFloat()
+        paint.shader = LinearGradient(
+            0f, 0f, w, h,
+            Color.parseColor("#FBFBFC"), Color.parseColor("#E9ECF0"),
+            Shader.TileMode.CLAMP
+        )
+        c.drawRect(0f, 0f, w, h, paint)
+        paint.shader = null
+
+        blob(c, w * 0.95f, h * 0.06f, w * 0.75f, 150, 90)
+        blob(c, w * 0.00f, h * 0.38f, w * 0.65f, 120, 60)
+        blob(c, w * 0.90f, h * 0.68f, w * 0.70f, 140, 70)
+        blob(c, w * 0.10f, h * 0.95f, w * 0.80f, 110, 55)
+    }
+}
+
+/** কাঁচের কার্ডের পেছনের কালো-সাদা নরম আভা: ক্রেডিট কার্ডে ব্যবহৃত */
+class GlassBackdrop(ctx: Context, private val r: Float) : View(ctx) {
+    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val line = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeWidth = 1.2f * resources.displayMetrics.density
+        color = Color.argb(70, 255, 255, 255)
+    }
     private val clip = Path()
+
+    private fun blob(c: Canvas, x: Float, y: Float, rad: Float, gray: Int, a: Int) {
+        paint.shader = RadialGradient(
+            x, y, rad,
+            Color.argb(a, gray, gray, gray),
+            Color.argb(0, gray, gray, gray),
+            Shader.TileMode.CLAMP
+        )
+        c.drawCircle(x, y, rad, paint)
+        paint.shader = null
+    }
 
     override fun onDraw(c: Canvas) {
         val w = width.toFloat()
         val h = height.toFloat()
         clip.reset()
-        clip.addRoundRect(RectF(0f, 0f, w, h), floatArrayOf(0f, 0f, 0f, 0f, r, r, r, r), Path.Direction.CW)
+        clip.addRoundRect(RectF(0f, 0f, w, h), r, r, Path.Direction.CW)
         c.clipPath(clip)
-        paint.color = Color.argb(34, 255, 255, 255)
-        c.drawCircle(w * 0.92f, h * 0.12f, h * 0.5f, paint)
-        paint.color = Color.argb(24, 255, 255, 255)
-        c.drawCircle(w * 0.02f, h * 0.98f, h * 0.42f, paint)
-        paint.color = Color.argb(16, 255, 255, 255)
-        c.drawCircle(w * 0.55f, h * 0.9f, h * 0.2f, paint)
+
+        paint.shader = LinearGradient(
+            0f, 0f, w, h,
+            Color.parseColor("#FAFBFC"), Color.parseColor("#E6E9EE"),
+            Shader.TileMode.CLAMP
+        )
+        c.drawRect(0f, 0f, w, h, paint)
+        paint.shader = null
+
+        blob(c, w * 0.10f, h * 0.15f, w * 0.60f, 255, 230)
+        blob(c, w * 0.95f, h * 0.40f, w * 0.55f, 150, 90)
+        blob(c, w * 0.25f, h * 0.95f, w * 0.60f, 130, 80)
+
+        // কাঁচের ওপর বাঁকা আভার রেখা
+        c.drawCircle(w * 0.15f, h * 0.55f, w * 0.55f, line)
+        c.drawCircle(w * 1.02f, h * 0.95f, w * 0.60f, line)
     }
 }
 
-/** অ্যানিমেটেড বড় ON/OFF সুইচ */
+/** কালো-সাদা কীবোর্ড লোগো: কালো গোল-চৌকো ঘরে সাদা কী */
+class KeyboardLogo(ctx: Context) : View(ctx) {
+    private val bg = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#0B0B0D") }
+    private val key = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE }
+    private val rect = RectF()
+
+    override fun onDraw(c: Canvas) {
+        val s = width.toFloat()
+        rect.set(0f, 0f, s, s)
+        c.drawRoundRect(rect, s * 0.28f, s * 0.28f, bg)
+
+        val kr = s * 0.045f
+        val gap = s * 0.055f
+        val kh = s * 0.145f
+        val left = s * 0.17f
+        val inner = s - 2 * left
+
+        // সারি ১: ৪টি কী
+        var y = s * 0.26f
+        val w4 = (inner - 3 * gap) / 4f
+        for (i in 0 until 4) {
+            val x = left + i * (w4 + gap)
+            rect.set(x, y, x + w4, y + kh)
+            c.drawRoundRect(rect, kr, kr, key)
+        }
+        // সারি ২: ৪টি কী
+        y += kh + gap
+        for (i in 0 until 4) {
+            val x = left + i * (w4 + gap)
+            rect.set(x, y, x + w4, y + kh)
+            c.drawRoundRect(rect, kr, kr, key)
+        }
+        // সারি ৩: স্পেসবার
+        y += kh + gap
+        rect.set(left + w4 + gap, y, s - left - w4 - gap, y + kh)
+        c.drawRoundRect(rect, kr, kr, key)
+    }
+}
+
+/** অ্যানিমেটেড বড় ON/OFF সুইচ (কালো-সাদা) */
 class ToggleView(ctx: Context, p: Palette) : View(ctx) {
     var onTap: (() -> Unit)? = null
     var on = false
@@ -96,11 +194,11 @@ class ToggleView(ctx: Context, p: Palette) : View(ctx) {
         val rad = h / 2f
         val tc = t.coerceIn(0f, 1f)
 
-        // ট্র্যাক + জ্বলজ্বলে আভা
+        // ট্র্যাক + নরম ছায়া
         track.color = eval.evaluate(tc, offC, onC) as Int
         track.setShadowLayer(
-            14f * d * tc, 0f, 4f * d * tc,
-            Color.argb((110 * tc).toInt(), Color.red(onC), Color.green(onC), Color.blue(onC))
+            12f * d * tc, 0f, 4f * d * tc,
+            Color.argb((70 * tc).toInt(), 0, 0, 0)
         )
         c.drawRoundRect(rect, rad, rad, track)
 
@@ -124,44 +222,5 @@ class ToggleView(ctx: Context, p: Palette) : View(ctx) {
         arc.set(cx - ir, ky - ir, cx + ir, ky + ir)
         c.drawArc(arc, -60f, 300f, false, icon)
         c.drawLine(cx, ky - ir * 1.15f, cx, ky - ir * 0.1f, icon)
-    }
-}
-
-/** কাঁচের কার্ডের পেছনের রঙিন নরম আলো: গ্লাস ইফেক্ট এর ওপর দিয়েই ফুটে ওঠে */
-class GlassBackdrop(ctx: Context, private val dark: Boolean, private val r: Float) : View(ctx) {
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-    private val clip = Path()
-
-    private fun blob(c: Canvas, x: Float, y: Float, rad: Float, color: Int, a: Int) {
-        paint.shader = RadialGradient(
-            x, y, rad,
-            Color.argb(a, Color.red(color), Color.green(color), Color.blue(color)),
-            Color.argb(0, Color.red(color), Color.green(color), Color.blue(color)),
-            Shader.TileMode.CLAMP
-        )
-        c.drawCircle(x, y, rad, paint)
-    }
-
-    override fun onDraw(c: Canvas) {
-        val w = width.toFloat()
-        val h = height.toFloat()
-        clip.reset()
-        clip.addRoundRect(RectF(0f, 0f, w, h), r, r, Path.Direction.CW)
-        c.clipPath(clip)
-
-        paint.shader = LinearGradient(
-            0f, 0f, w, h,
-            Color.parseColor(if (dark) "#0F1A40" else "#DCE7FF"),
-            Color.parseColor(if (dark) "#2A1A5C" else "#EEE3FF"),
-            Shader.TileMode.CLAMP
-        )
-        c.drawRect(0f, 0f, w, h, paint)
-
-        val a = if (dark) 200 else 190
-        blob(c, w * 0.12f, h * 0.18f, w * 0.55f, Color.parseColor("#4F7BFF"), a)
-        blob(c, w * 0.92f, h * 0.42f, w * 0.50f, Color.parseColor("#9B6BFF"), a)
-        blob(c, w * 0.30f, h * 0.95f, w * 0.55f, Color.parseColor("#38C9E8"), if (dark) 150 else 140)
-        blob(c, w * 0.85f, h * 0.05f, w * 0.30f, Color.parseColor("#FF8FC8"), if (dark) 120 else 120)
-        paint.shader = null
     }
 }
