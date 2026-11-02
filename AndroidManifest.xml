@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="বিজয় কিবোর্ড"
+        android:label="OTG Keyboard"
         android:icon="@drawable/ic_launcher"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
         <activity android:name=".MainActivity" android:exported="true"
@@ -13,7 +13,7 @@
         </activity>
         <service
             android:name=".BijoyIME"
-            android:label="বিজয় ফিজিক্যাল কিবোর্ড"
+            android:label="OTG Keyboard"
             android:permission="android.permission.BIND_INPUT_METHOD"
             android:exported="true">
             <intent-filter>
