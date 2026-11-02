@@ -20,13 +20,13 @@ object License {
 
     // পাবলিক কী (X.509 / DER, base64) — শুধু যাচাই করতে পারে, কোড বানাতে পারে না
     private const val PUBLIC_KEY_B64 =
-        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA07HOr8MKTPjwT69cn4cM" +
-        "oqfeWywAQy9dYdPv9lJ5hyCLAY1U3VnaEYvHViKWQNCKuOmRssi+KheOZ00Ic2Ab" +
-        "S/FSiKh/gee4EWbNoGfGto+W1+u4sNP43/TylG4U6H8JGA6mrtY6vZ+FDOdrXTVT" +
-        "tYkdTAOwf5KNN1fP71OR1xOIscpjQJFjDDgF+/5Gkm4ceSObiGjxORpzEgI3HZev" +
-        "+y+MJr61OdMHtCs6RLWmasiJkZ3ksrKEskhDve4mcntaglaCIpIbtXWsHVMpOcTY" +
-        "Wi6fQlXk5a2Y0A4etCsK0AhQpd/GXaXPOhxI4VwfgEVlVYvsGNgtzrX0ELtEuE1d" +
-        "YQIDAQAB"
+        "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAxZ2CQERjG6uvDE+UnpzM" +
+        "uf+e8nG3qKm0z/vBT6M/YP+yZaVbDsNZsoWJSvkCRfleJXmS/oIfhR5O4PXbGkVt" +
+        "fuVZPyns2a7ALou1XsU+S5FUxvbKnZCx4aRRox8mekHOc0BiWRWN++wF1JM+F6FF" +
+        "N8IaRk1WzZlcO371qxD3yfwLNhv4XggD5OX8PgChr7FCUVXUeN7JDKoI442fMQlp" +
+        "0WCyv6x8YPok6j3mJKLl+TeRZLYQ+gMDknkgOFC7uG15rF9tKvQjduLPo20yRW1w" +
+        "JqOPF7yyUUp57mFOAP1K/Ix/UgjBDqtxdHGd1ze4/vlU2A3p3YdhvBfA/vP5rnvl" +
+        "qQIDAQAB"
 
     private const val PREFS = "bijoy_license"
     private const val KEY_CODE = "code"
