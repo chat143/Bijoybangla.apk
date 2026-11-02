@@ -11,6 +11,7 @@ import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.text.InputType
@@ -74,8 +75,8 @@ class MainActivity : Activity() {
 
     private fun card(): LinearLayout = LinearLayout(this).apply {
         orientation = LinearLayout.VERTICAL
-        background = rounded(p.card, dpf(24f), p.stroke, dp(1))
-        elevation = if (p.dark) 0f else dpf(6f)
+        background = glass(dpf(24f), true)
+        elevation = dpf(5f)
         setPadding(dp(18), dp(18), dp(18), dp(18))
     }
 
@@ -93,15 +94,21 @@ class MainActivity : Activity() {
     // ---------- স্ক্রিন ----------
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val night = resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        p = Palette(night == Configuration.UI_MODE_NIGHT_YES)
-        window.statusBarColor = p.heroA
-        window.navigationBarColor = p.bg
+        p = Palette()
+
+        // ফোনে ডার্ক মোড চালু থাকলেও অ্যাপ সবসময় সাদা থিমে থাকবে
+        window.statusBarColor = Color.parseColor("#FBFBFC")
+        window.navigationBarColor = Color.parseColor("#E9ECF0")
+        var flags = window.decorView.systemUiVisibility
+        if (Build.VERSION.SDK_INT >= 23) flags = flags or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        if (Build.VERSION.SDK_INT >= 26) flags = flags or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+        window.decorView.systemUiVisibility = flags
+        if (Build.VERSION.SDK_INT >= 29) window.decorView.isForceDarkAllowed = false
 
         val col = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
-        val side = dp(18)
-        col.addView(hero(), lp(MATCH_PARENT, WRAP_CONTENT))
-        col.addView(toggleCard(), lp(MATCH_PARENT, WRAP_CONTENT, side, -dp(48), side, 0))
+        val side = dp(16)
+        col.addView(header(), lp(MATCH_PARENT, WRAP_CONTENT, side, dp(14), side, 0))
+        col.addView(toggleCard(), lp(MATCH_PARENT, WRAP_CONTENT, side, dp(16), side, 0))
         col.addView(stepsCard(), lp(MATCH_PARENT, WRAP_CONTENT, side, dp(16), side, 0))
         col.addView(mapCard(), lp(MATCH_PARENT, WRAP_CONTENT, side, dp(16), side, 0))
         col.addView(testCard(), lp(MATCH_PARENT, WRAP_CONTENT, side, dp(16), side, 0))
@@ -109,11 +116,13 @@ class MainActivity : Activity() {
         col.addView(footer(), lp(MATCH_PARENT, WRAP_CONTENT, side, dp(20), side, dp(28)))
 
         val scroll = ScrollView(this).apply {
-            setBackgroundColor(p.bg)
             overScrollMode = View.OVER_SCROLL_NEVER
             addView(col)
         }
-        setContentView(scroll)
+        val root = FrameLayout(this)
+        root.addView(PageBackdrop(this), FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+        root.addView(scroll, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+        setContentView(root)
 
         // একে একে ভেসে ওঠার অ্যানিমেশন
         for (i in 0 until col.childCount) {
@@ -135,20 +144,18 @@ class MainActivity : Activity() {
         }
     }
 
-    /** স্বচ্ছ কাঁচের মতো পটভূমি: আধা-সাদা গ্রেডিয়েন্ট + উজ্জ্বল কিনারা */
+    /** স্বচ্ছ কাঁচের মতো পটভূমি: আধা-সাদা গ্রেডিয়েন্ট + উজ্জ্বল সাদা কিনারা */
     private fun glass(radius: Float, strong: Boolean = false): GradientDrawable {
-        val top = if (p.dark) Color.argb(if (strong) 64 else 42, 255, 255, 255)
-        else Color.argb(if (strong) 200 else 150, 255, 255, 255)
-        val bot = if (p.dark) Color.argb(14, 255, 255, 255) else Color.argb(70, 255, 255, 255)
-        val edge = if (p.dark) Color.argb(80, 255, 255, 255) else Color.argb(220, 255, 255, 255)
+        val top = Color.argb(if (strong) 215 else 165, 255, 255, 255)
+        val bot = Color.argb(if (strong) 130 else 90, 255, 255, 255)
         return GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(top, bot)).apply {
             cornerRadius = radius
-            setStroke(dp(1), edge)
+            setStroke(dp(1), Color.argb(240, 255, 255, 255))
         }
     }
 
     private fun hairline(): View = View(this).apply {
-        setBackgroundColor(Color.argb(if (p.dark) 80 else 120, Color.red(p.primary), Color.green(p.primary), Color.blue(p.primary)))
+        setBackgroundColor(Color.argb(70, 0, 0, 0))
     }
 
     private fun decodeSampled(resId: Int, target: Int): android.graphics.Bitmap? {
@@ -168,8 +175,8 @@ class MainActivity : Activity() {
         val ring = View(this).apply {
             background = GradientDrawable().apply {
                 shape = GradientDrawable.OVAL
-                setColor(if (p.dark) white(26) else white(120))
-                setStroke(dp(3), if (p.dark) white(90) else white(235))
+                setColor(white(120))
+                setStroke(dp(3), white(235))
             }
         }
         frame.addView(ring, FrameLayout.LayoutParams(size, size))
@@ -181,15 +188,14 @@ class MainActivity : Activity() {
         } else {
             label("A", 36f, Color.WHITE, true).apply {
                 gravity = Gravity.CENTER
-                background = GradientDrawable(GradientDrawable.Orientation.TL_BR, intArrayOf(p.heroA, p.heroB))
-                    .apply { shape = GradientDrawable.OVAL }
+                background = oval(p.primary)
             }
         }
         photo.outlineProvider = circleOutline
         photo.clipToOutline = true
         frame.addView(photo, FrameLayout.LayoutParams(size - 2 * inset, size - 2 * inset, Gravity.CENTER))
 
-        val badge = label("</>", 12f, p.primary, true).apply {
+        val badge = label("</>", 12f, p.text, true).apply {
             gravity = Gravity.CENTER
             background = oval(Color.WHITE)
             elevation = dpf(5f)
@@ -203,7 +209,7 @@ class MainActivity : Activity() {
     private fun footer(): View {
         val rad = dpf(32f)
         val root = FrameLayout(this)
-        root.addView(GlassBackdrop(this, p.dark, rad), FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+        root.addView(GlassBackdrop(this, rad), FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
 
         val glassCard = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -231,7 +237,7 @@ class MainActivity : Activity() {
 
         // </>  Adnan Sami
         val nameRow = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
-        nameRow.addView(label("</>", 22f, p.primary, true))
+        nameRow.addView(label("</>", 22f, p.text, true))
         nameRow.addView(label("Adnan Sami", 27f, p.text, true), lp(WRAP_CONTENT, WRAP_CONTENT, dp(10)))
         glassCard.addView(nameRow, lp(WRAP_CONTENT, WRAP_CONTENT, 0, dp(12)))
 
@@ -242,12 +248,12 @@ class MainActivity : Activity() {
         role.addView(hairline(), lp(0, dp(1)).apply { weight = 1f })
         glassCard.addView(role, lp(MATCH_PARENT, WRAP_CONTENT, 0, dp(10)))
 
-        // Thank you for using my app 💙
+        // Thank you for using my app 🖤
         val thanks = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
         thanks.addView(label("Thank you for using my app", 14f, p.text).apply {
             setTypeface(Typeface.DEFAULT, Typeface.ITALIC)
         })
-        val heart = label("💙", 16f, p.primary)
+        val heart = label("🖤", 16f, p.text)
         thanks.addView(heart, lp(WRAP_CONTENT, WRAP_CONTENT, dp(8)))
         glassCard.addView(thanks, lp(WRAP_CONTENT, WRAP_CONTENT, 0, dp(16)))
 
@@ -283,51 +289,40 @@ class MainActivity : Activity() {
         super.onDestroy()
     }
 
-    private fun hero(): View {
-        val r = dpf(36f)
-        val box = FrameLayout(this)
-        box.background = GradientDrawable(
-            GradientDrawable.Orientation.TL_BR, intArrayOf(p.heroA, p.heroB)
-        ).apply { cornerRadii = floatArrayOf(0f, 0f, 0f, 0f, r, r, r, r) }
-        box.addView(BlobView(this, r), FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
-
-        val col = LinearLayout(this).apply {
+    private fun header(): View {
+        val box = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(24), dp(26), dp(24), dp(78))
+            background = glass(dpf(30f), true)
+            elevation = dpf(5f)
+            setPadding(dp(22), dp(22), dp(22), dp(22))
         }
 
         val top = LinearLayout(this).apply { gravity = Gravity.CENTER_VERTICAL }
-        val badge = label("অ", 26f, Color.WHITE, true).apply {
-            gravity = Gravity.CENTER
-            background = rounded(white(45), dpf(16f), white(90), dp(1))
-        }
-        top.addView(badge, lp(dp(52), dp(52)))
-        val pill = label("স্বাগতম  •  ${greeting()}", 13f, Color.WHITE, true).apply {
+        top.addView(KeyboardLogo(this), lp(dp(52), dp(52)))
+        val pill = label("স্বাগতম  •  ${greeting()}", 13f, p.text, true).apply {
             setPadding(dp(14), dp(7), dp(14), dp(7))
-            background = rounded(white(45), dpf(30f))
+            background = glass(dpf(30f))
         }
         top.addView(pill, lp(WRAP_CONTENT, WRAP_CONTENT, dp(12)))
-        col.addView(top)
+        box.addView(top)
 
-        col.addView(label("বিজয় ফিজিক্যাল\nকিবোর্ড", 32f, Color.WHITE, true), lp(MATCH_PARENT, WRAP_CONTENT, 0, dp(22)))
-        col.addView(
+        box.addView(label("বিজয় ফিজিক্যাল\nকিবোর্ড", 32f, p.text, true), lp(MATCH_PARENT, WRAP_CONTENT, 0, dp(20)))
+        box.addView(
             label(
                 "OTG বা যেকোনো কিবোর্ডে ইংরেজি কী চাপুন, যেকোনো অ্যাপে নিখুঁত বাংলা পান। কম্পিউটারের বিজয় বাহান্ন (৫২) লেআউটের মতোই।",
-                14.5f, white(225)
+                14.5f, p.sub
             ), lp(MATCH_PARENT, WRAP_CONTENT, 0, dp(10))
         )
 
         val feats = LinearLayout(this)
         for ((i, f) in listOf("বিজয় ৫২", "যেকোনো অ্যাপে", "অফলাইন").withIndex()) {
-            val chip = label(f, 12f, Color.WHITE, true).apply {
+            val chip = label(f, 12f, p.text, true).apply {
                 setPadding(dp(12), dp(6), dp(12), dp(6))
-                background = rounded(white(38), dpf(20f), white(70), dp(1))
+                background = rounded(p.key, dpf(20f), p.stroke, dp(1))
             }
             feats.addView(chip, lp(WRAP_CONTENT, WRAP_CONTENT, if (i == 0) 0 else dp(8)))
         }
-        col.addView(feats, lp(MATCH_PARENT, WRAP_CONTENT, 0, dp(18)))
-
-        box.addView(col, FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
+        box.addView(feats, lp(MATCH_PARENT, WRAP_CONTENT, 0, dp(18)))
         return box
     }
 
