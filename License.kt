@@ -83,7 +83,7 @@ object License {
  * জমা থাকে, তাই ফোন রিস্টার্ট করলেও আগের জমা সময় মুছে যায় না।
  */
 object Trial {
-    const val LIMIT_MS = 7 * 60 * 1000L
+    const val LIMIT_MS = 3 * 60 * 1000L
 
     private const val PREFS = "bijoy_trial"
     private const val KEY_TOTAL = "total_ms"
