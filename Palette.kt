@@ -3,21 +3,19 @@ package com.bijoy.keyboard
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 
-/** হালকা ও ডার্ক, দুই মোডের রঙ এক জায়গায় */
-class Palette(val dark: Boolean) {
+/** শুধু সাদা ও কালো। ফোনে ডার্ক মোড থাকলেও অ্যাপ সবসময় সাদা থিমে চলবে */
+class Palette {
     private fun c(s: String) = Color.parseColor(s)
 
-    val bg = c(if (dark) "#0B1020" else "#F1F5FF")
-    val card = c(if (dark) "#151D33" else "#FFFFFF")
-    val stroke = c(if (dark) "#25305A" else "#E3E9FA")
-    val text = c(if (dark) "#EEF2FF" else "#0F1838")
-    val sub = c(if (dark) "#9FACCB" else "#5A6685")
-    val key = c(if (dark) "#1C2745" else "#EFF3FF")
-    val primary = c("#3B6BFF")
-    val ok = c("#16B36B")
-    val offTrack = c(if (dark) "#2B3658" else "#D3DAEE")
-    val heroA = c(if (dark) "#2347C9" else "#3B6BFF")
-    val heroB = c(if (dark) "#5A39D1" else "#7A4DFF")
+    val bg = c("#F4F5F7")        // পেছনের হালকা সাদা-ধূসর
+    val card = c("#FFFFFF")
+    val stroke = c("#E2E5EA")    // সরু কিনারা
+    val text = c("#0B0B0D")      // প্রায় কালো লেখা
+    val sub = c("#5B606B")       // ধূসর ছোট লেখা
+    val key = c("#EEF0F3")       // কী ও ইনপুট ঘরের হালকা ধূসর
+    val primary = c("#0B0B0D")   // কালো (সুইচ, সক্রিয় বোতাম)
+    val ok = c("#0B0B0D")
+    val offTrack = c("#D6D9DF")
 }
 
 fun rounded(color: Int, radius: Float, strokeColor: Int = 0, strokeWidth: Int = 0): GradientDrawable =
@@ -26,3 +24,4 @@ fun rounded(color: Int, radius: Float, strokeColor: Int = 0, strokeWidth: Int = 
         cornerRadius = radius
         if (strokeWidth > 0) setStroke(strokeWidth, strokeColor)
     }
+    
